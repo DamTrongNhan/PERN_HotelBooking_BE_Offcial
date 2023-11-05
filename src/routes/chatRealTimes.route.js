@@ -3,7 +3,7 @@ import {
   getAllMemberChatByAdminId,
   getMemberChatByCustomerId,
   createContentChat,
-  getContentChat,
+  getAllContentChat,
   allUsers,
 } from "../controllers/chatRealTimes.controller";
 
@@ -38,10 +38,10 @@ export default (router) => {
   );
 
   router.get(
-    "/chatRealTimes/getContentChat/:id",
+    "/chatRealTimes/getAllContentChat/:id",
     validateChatRealTimesParams(id),
     passport.authenticate("jwt", { session: false }),
-    getContentChat
+    getAllContentChat
   );
 
   router.get(
