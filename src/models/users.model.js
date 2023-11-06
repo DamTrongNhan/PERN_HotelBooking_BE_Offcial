@@ -38,12 +38,22 @@ module.exports = (sequelize, DataTypes) => {
       // ------------------------------------
 
       users.hasMany(models.memberChat, {
-        foreignKey: "adminId",
-        as: "adminInfoData",
+        foreignKey: "userId1",
+        as: "user1InfoData",
       });
       users.hasMany(models.memberChat, {
-        foreignKey: "customerId",
-        as: "customerInfoData",
+        foreignKey: "userId2",
+        as: "user2InfoData",
+      });
+      // ------------------------------------
+
+      users.hasMany(models.contentChat, {
+        foreignKey: "senderId",
+        as: "senderInfoData",
+      });
+      users.hasMany(models.contentChat, {
+        foreignKey: "readerId",
+        as: "readerInfoData",
       });
     }
   }

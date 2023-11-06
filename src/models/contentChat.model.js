@@ -7,6 +7,18 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "memberChatId",
         as: "contentChatData",
       });
+      // ---------------------------------------
+
+      contentChat.belongsTo(models.users, {
+        foreignKey: "senderId",
+        targetKey: "id",
+        as: "senderInfoData",
+      });
+      contentChat.belongsTo(models.users, {
+        foreignKey: "readerId",
+        targetKey: "id",
+        as: "readerInfoData",
+      });
     }
   }
   contentChat.init(
@@ -23,6 +35,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       senderId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      readerId: {
         type: DataTypes.UUID,
         allowNull: false,
       },

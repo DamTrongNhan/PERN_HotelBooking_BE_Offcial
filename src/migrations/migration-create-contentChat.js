@@ -18,7 +18,10 @@ module.exports = {
         type: DataTypes.UUID,
         allowNull: false,
       },
-
+      readerId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
       message: { type: DataTypes.TEXT, allowNull: false },
 
       createdAt: {

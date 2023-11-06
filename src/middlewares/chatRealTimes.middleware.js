@@ -13,14 +13,13 @@ export const validateChatRealTimes = (schema) => async (req, res, next) => {
 
 export const getMemberSchema = Yup.object({
   body: Yup.object({
-    adminId: Yup.string().required("Admin id is required"),
-    customerId: Yup.string().required("Customer id is required"),
+    userId: Yup.string().required("User id is required"),
   }),
 });
 export const createContentChatSchema = Yup.object({
   body: Yup.object({
     memberChatId: Yup.string().required("Member chat id is required"),
-    senderId: Yup.string().required("Sender id is required"),
+    readerId: Yup.string().required("Reader id is required"),
     message: Yup.string().required("Message id is required"),
   }),
 });

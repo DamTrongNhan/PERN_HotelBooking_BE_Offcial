@@ -1,7 +1,7 @@
 import passport from "../config/passport";
 import {
-  getAllMemberChatByAdminId,
-  getMemberChatByCustomerId,
+  getAllMemberChat,
+  getMemberChat,
   createContentChat,
   getAllContentChat,
   allUsers,
@@ -17,21 +17,20 @@ import {
 
 export default (router) => {
   router.get(
-    "/chatRealTimes/getAllMemberChatByAdminId/:id",
-    validateChatRealTimesParams(id),
+    "/chatRealTimes/getAllMemberChat",
     passport.authenticate("jwt", { session: false }),
-    getAllMemberChatByAdminId
+    getAllMemberChat
   );
 
   router.post(
-    "/chatRealTimes/getMemberChatByCustomerId",
+    "/chatRealTimes/getMemberChat",
     validateChatRealTimes(getMemberSchema),
     passport.authenticate("jwt", { session: false }),
-    getMemberChatByCustomerId
+    getMemberChat
   );
 
   router.post(
-    "/chatRealTimes/createContentChat/",
+    "/chatRealTimes/createContentChat",
     validateChatRealTimes(createContentChatSchema),
     passport.authenticate("jwt", { session: false }),
     createContentChat
@@ -45,7 +44,7 @@ export default (router) => {
   );
 
   router.get(
-    "/chatRealTimes/getAllUsers/",
+    "/chatRealTimes/getAllUsers",
     passport.authenticate("jwt", { session: false }),
     allUsers
   );

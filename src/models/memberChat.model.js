@@ -10,14 +10,14 @@ module.exports = (sequelize, DataTypes) => {
       // --------------------------------------------
 
       memberChat.belongsTo(models.users, {
-        foreignKey: "adminId",
+        foreignKey: "userId1",
         targetKey: "id",
-        as: "adminInfoData",
+        as: "user1InfoData",
       });
       memberChat.belongsTo(models.users, {
-        foreignKey: "customerId",
+        foreignKey: "userId2",
         targetKey: "id",
-        as: "customerInfoData",
+        as: "user2InfoData",
       });
     }
   }
@@ -30,11 +30,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
 
-      adminId: {
+      userId1: {
         type: DataTypes.UUID,
         allowNull: false,
       },
-      customerId: {
+      userId2: {
         type: DataTypes.UUID,
         allowNull: false,
       },

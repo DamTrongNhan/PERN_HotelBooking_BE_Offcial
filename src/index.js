@@ -51,8 +51,9 @@ const io = createIO(server);
 
 io.on("connection", (socket) => {
   console.log("Connected to socket.io");
-  socket.on("setup", (userData) => {
-    socket.join(userData.id);
+
+  socket.on("setup", (userId) => {
+    socket.join(userId);
     socket.emit("connected");
   });
 
@@ -60,23 +61,17 @@ io.on("connection", (socket) => {
     socket.join(room);
     console.log("User Joined Room: " + room);
   });
+
   socket.on("typing", (room) => socket.in(room).emit("typing"));
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
-  socket.on("new message", (newMessageReceived) => {
-    var chat = newMessageReceived.chat;
-
-    if (!chat.users) return console.log("chat.users not defined");
-
-    chat.users.forEach((user) => {
-      if (user.id == newMessageReceived.sender.id) return;
-
-      socket.in(user.id).emit("message received", newMessageReceived);
-    });
+  socket.on("new message", (newMessage) => {
+    if (!newMessage?.senderId) return console.log("Sender is not defined");
+    socket.in(newMessage?.readerId).emit("message received", newMessage);
   });
 
-  socket.off("setup", () => {
-    console.log("USER DISCONNECTED");
-    socket.leave(userData.id);
-  });
+  // socket.off("setup", () => {
+  //   console.log("USER DISCONNECTED");
+  //   socket.leave(userId);
+  // });
 });

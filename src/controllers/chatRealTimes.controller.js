@@ -2,11 +2,12 @@ import db from "../models/index";
 import _ from "lodash";
 import { Op } from "sequelize";
 
-export const getAllMemberChatByAdminId = async (req, res, next) => {
+export const getAllMemberChat = async (req, res, next) => {
   try {
-    const adminId = req.params.id;
+    const userId = req.user.id;
+
     const allChats = await db.memberChat.findAll({
-      where: { adminId },
+      where: { [Op.or]: [{ userId1: userId }, { userId2: userId }] },
       order: [["createdAt", "DESC"]],
       include: [
         {
@@ -15,7 +16,7 @@ export const getAllMemberChatByAdminId = async (req, res, next) => {
         },
         {
           model: db.users,
-          as: "adminInfoData",
+          as: "user1InfoData",
           attributes: ["firstName", "lastName", "email", "id"],
           include: [
             { model: db.photos, as: "avatarData", attributes: ["url"] },
@@ -23,7 +24,7 @@ export const getAllMemberChatByAdminId = async (req, res, next) => {
         },
         {
           model: db.users,
-          as: "customerInfoData",
+          as: "user2InfoData",
           attributes: ["firstName", "lastName", "email", "id"],
           include: [
             { model: db.photos, as: "avatarData", attributes: ["url"] },
@@ -40,11 +41,13 @@ export const getAllMemberChatByAdminId = async (req, res, next) => {
   }
 };
 
-export const getMemberChatByCustomerId = async (req, res, next) => {
+export const getMemberChat = async (req, res, next) => {
   try {
-    const { customerId, adminId } = req.body;
+    const userIdLoggedIn = req.user.id;
+    const { userId } = req.body;
+
     const chat = await db.memberChat.findOne({
-      where: { customerId },
+      where: { [Op.or]: [{ userId1: userId }, { userId2: userId }] },
       include: [
         {
           model: db.contentChat,
@@ -52,7 +55,7 @@ export const getMemberChatByCustomerId = async (req, res, next) => {
         },
         {
           model: db.users,
-          as: "adminInfoData",
+          as: "user1InfoData",
           attributes: ["firstName", "lastName", "email", "id"],
           include: [
             { model: db.photos, as: "avatarData", attributes: ["url"] },
@@ -60,7 +63,7 @@ export const getMemberChatByCustomerId = async (req, res, next) => {
         },
         {
           model: db.users,
-          as: "customerInfoData",
+          as: "user2InfoData",
           attributes: ["firstName", "lastName", "email", "id"],
           include: [
             { model: db.photos, as: "avatarData", attributes: ["url"] },
@@ -74,13 +77,13 @@ export const getMemberChatByCustomerId = async (req, res, next) => {
       return res.status(200).json({ data: chat });
     } else {
       const newMemberChat = await db.memberChat.create({
-        adminId,
-        customerId,
+        userId1: userIdLoggedIn,
+        userId2: userId,
       });
 
       if (newMemberChat) {
         const chat = await db.memberChat.findOne({
-          where: { customerId },
+          where: { userId1: userIdLoggedIn, userId2: userId },
           include: [
             {
               model: db.contentChat,
@@ -88,7 +91,7 @@ export const getMemberChatByCustomerId = async (req, res, next) => {
             },
             {
               model: db.users,
-              as: "adminInfoData",
+              as: "user1InfoData",
               attributes: ["firstName", "lastName", "email", "id"],
               include: [
                 { model: db.photos, as: "avatarData", attributes: ["url"] },
@@ -96,7 +99,7 @@ export const getMemberChatByCustomerId = async (req, res, next) => {
             },
             {
               model: db.users,
-              as: "customerInfoData",
+              as: "user2InfoData",
               attributes: ["firstName", "lastName", "email", "id"],
               include: [
                 { model: db.photos, as: "avatarData", attributes: ["url"] },
@@ -128,27 +131,16 @@ export const getAllContentChat = async (req, res, next) => {
       where: { memberChatId },
       include: [
         {
-          model: db.memberChat,
-          as: "contentChatData",
-          attributes: ["adminId", "customerId"],
-          include: [
-            {
-              model: db.users,
-              as: "adminInfoData",
-              attributes: ["firstName", "lastName", "email", "id"],
-              include: [
-                { model: db.photos, as: "avatarData", attributes: ["url"] },
-              ],
-            },
-            {
-              model: db.users,
-              as: "customerInfoData",
-              attributes: ["firstName", "lastName", "email", "id"],
-              include: [
-                { model: db.photos, as: "avatarData", attributes: ["url"] },
-              ],
-            },
-          ],
+          model: db.users,
+          as: "senderInfoData",
+          attributes: ["firstName", "lastName", "email", "id"],
+          include: { model: db.photos, as: "avatarData", attributes: ["url"] },
+        },
+        {
+          model: db.users,
+          as: "readerInfoData",
+          attributes: ["firstName", "lastName", "email", "id"],
+          include: { model: db.photos, as: "avatarData", attributes: ["url"] },
         },
       ],
       raw: false,
@@ -162,8 +154,9 @@ export const getAllContentChat = async (req, res, next) => {
 
 export const createContentChat = async (req, res, next) => {
   try {
+    const senderId = req.user.id;
     const data = req.body;
-    const contentChat = await db.contentChat.create(data);
+    const contentChat = await db.contentChat.create({ senderId, ...data });
     if (contentChat) {
       return res.status(200).json({ data: contentChat });
     } else {

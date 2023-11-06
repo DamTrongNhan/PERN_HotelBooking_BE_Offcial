@@ -10,11 +10,11 @@ module.exports = {
         allowNull: false,
       },
 
-      adminId: {
+      userId1: {
         type: DataTypes.UUID,
         allowNull: false,
       },
-      customerId: {
+      userId2: {
         type: DataTypes.UUID,
         allowNull: false,
       },
