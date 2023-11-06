@@ -47,7 +47,12 @@ export const getMemberChat = async (req, res, next) => {
     const { userId } = req.body;
 
     const chat = await db.memberChat.findOne({
-      where: { [Op.or]: [{ userId1: userId }, { userId2: userId }] },
+      where: {
+        $or: [
+          { $and: [{ userId1: userIdLoggedIn }, { userId2: userId }] },
+          { $and: [{ userId2: userIdLoggedIn }, { userId1: userId }] },
+        ],
+      },
       include: [
         {
           model: db.contentChat,
