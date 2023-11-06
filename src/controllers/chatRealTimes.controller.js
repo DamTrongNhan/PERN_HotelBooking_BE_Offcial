@@ -9,10 +9,10 @@ export const getAllMemberChatByAdminId = async (req, res, next) => {
       where: { adminId },
       order: [["createdAt", "DESC"]],
       include: [
-        // {
-        //   model: db.contentChat,
-        //   as: "contentChatData",
-        // },
+        {
+          model: db.contentChat,
+          as: "contentChatData",
+        },
         {
           model: db.users,
           as: "adminInfoData",
@@ -33,60 +33,23 @@ export const getAllMemberChatByAdminId = async (req, res, next) => {
       raw: false,
       nest: true,
     });
+
     return res.status(200).json({ data: allChats });
-  } catch (err) {
-    return next(err);
+  } catch (error) {
+    return next(error);
   }
 };
 
-// export const getAllMemberChatByAdminId = (req, res, next) => {
-//   const adminId = req.params.id;
-
-//   db.memberChat
-//     .findAll({
-//       where: { adminId },
-//       order: [["createdAt", "DESC"]],
-//       distinct: true,
-//       include: [
-//         {
-//           model: db.contentChat,
-//           as: "contentChatData",
-//         },
-//         {
-//           model: db.users,
-//           as: "adminInfoData",
-//           attributes: ["firstName", "lastName", "email", "id"],
-//           include: [
-//             { model: db.photos, as: "avatarData", attributes: ["url"] },
-//           ],
-//         },
-//         {
-//           model: db.users,
-//           as: "customerInfoData",
-//           attributes: ["firstName", "lastName", "email", "id"],
-//           include: [
-//             { model: db.photos, as: "avatarData", attributes: ["url"] },
-//           ],
-//         },
-//       ],
-//       raw: false,
-//       nest: true,
-//     })
-//     .then((allChats) => {
-//       return res.status(200).json({ data: allChats });
-//     })
-//     .catch((error) => next(error));
-// };
 export const getMemberChatByCustomerId = async (req, res, next) => {
   try {
     const { customerId, adminId } = req.body;
     const chat = await db.memberChat.findOne({
       where: { customerId },
       include: [
-        // {
-        //   model: db.contentChat,
-        //   as: "contentChatData",
-        // },
+        {
+          model: db.contentChat,
+          as: "contentChatData",
+        },
         {
           model: db.users,
           as: "adminInfoData",
@@ -119,10 +82,10 @@ export const getMemberChatByCustomerId = async (req, res, next) => {
         const chat = await db.memberChat.findOne({
           where: { customerId },
           include: [
-            // {
-            //   model: db.contentChat,
-            //   as: "contentChatData",
-            // },
+            {
+              model: db.contentChat,
+              as: "contentChatData",
+            },
             {
               model: db.users,
               as: "adminInfoData",

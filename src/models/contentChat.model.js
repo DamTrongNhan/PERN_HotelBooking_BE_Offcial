@@ -26,7 +26,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         allowNull: false,
       },
-
       message: { type: DataTypes.TEXT, allowNull: false },
 
       createdAt: {

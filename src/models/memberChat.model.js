@@ -3,10 +3,12 @@ const { Model, Sequelize } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class memberChat extends Model {
     static associate(models) {
-      memberChat.hasOne(models.contentChat, {
+      memberChat.hasMany(models.contentChat, {
         foreignKey: "memberChatId",
         as: "contentChatData",
       });
+      // --------------------------------------------
+
       memberChat.belongsTo(models.users, {
         foreignKey: "adminId",
         targetKey: "id",
