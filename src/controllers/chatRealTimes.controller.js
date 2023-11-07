@@ -48,9 +48,9 @@ export const getMemberChat = async (req, res, next) => {
 
     const chat = await db.memberChat.findOne({
       where: {
-        $or: [
-          { $and: [{ userId1: userIdLoggedIn }, { userId2: userId }] },
-          { $and: [{ userId2: userIdLoggedIn }, { userId1: userId }] },
+        [Op.or]: [
+          { [Op.and]: [{ userId1: userIdLoggedIn }, { userId2: userId }] },
+          { [Op.and]: [{ userId2: userIdLoggedIn }, { userId1: userId }] },
         ],
       },
       include: [
@@ -134,6 +134,7 @@ export const getAllContentChat = async (req, res, next) => {
 
     const contentChat = await db.contentChat.findAll({
       where: { memberChatId },
+      order: [["createdAt", "ASC"]],
       include: [
         {
           model: db.users,

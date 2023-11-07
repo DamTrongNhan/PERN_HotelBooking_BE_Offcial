@@ -49,6 +49,14 @@ const server = app.listen(port, () =>
 
 const io = createIO(server);
 
+// const io = require("socket.io")(server, {
+//   pingTimeout: 60000,
+//   cors: {
+//     origin: process.env.REACT_URL,
+//     credentials: true,
+//   },
+// });
+
 io.on("connection", (socket) => {
   console.log("Connected to socket.io");
 
@@ -66,7 +74,8 @@ io.on("connection", (socket) => {
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
   socket.on("new message", (newMessage) => {
-    if (!newMessage?.senderId) return console.log("Sender is not defined");
+    if (!newMessage?.senderId || !newMessage?.readerId)
+      return console.log("Sender or reader is not defined");
     socket.in(newMessage?.readerId).emit("message received", newMessage);
   });
 
