@@ -4,10 +4,12 @@ import { Op } from "sequelize";
 
 export const getAllMemberChat = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userIdLoggedIn = req.user.id;
 
     const allChats = await db.memberChat.findAll({
-      where: { [Op.or]: [{ userId1: userId }, { userId2: userId }] },
+      where: {
+        [Op.or]: [{ userId1: userIdLoggedIn }, { userId2: userIdLoggedIn }],
+      },
       order: [["createdAt", "DESC"]],
       include: [
         {
@@ -199,5 +201,99 @@ export const allUsers = async (req, res, next) => {
     res.status(200).json({ data: users });
   } catch (error) {
     return next(error);
+  }
+};
+
+export const getMemberChatAdmin = async (req, res, next) => {
+  try {
+    const userIdLoggedIn = req.user.id;
+
+    const { id: userIdAdmin } = await db.users.findOne({
+      where: { roleKey: "R1" },
+    });
+
+    if (!userIdAdmin) {
+      return next({ statusCode: 404, message: "Admin not found" });
+    }
+
+    const chat = await db.memberChat.findOne({
+      where: {
+        [Op.or]: [
+          { [Op.and]: [{ userId1: userIdLoggedIn }, { userId2: userIdAdmin }] },
+          { [Op.and]: [{ userId2: userIdLoggedIn }, { userId1: userIdAdmin }] },
+        ],
+      },
+      include: [
+        {
+          model: db.contentChat,
+          as: "contentChatData",
+        },
+        {
+          model: db.users,
+          as: "user1InfoData",
+          attributes: ["firstName", "lastName", "email", "id"],
+          include: [
+            { model: db.photos, as: "avatarData", attributes: ["url"] },
+          ],
+        },
+        {
+          model: db.users,
+          as: "user2InfoData",
+          attributes: ["firstName", "lastName", "email", "id"],
+          include: [
+            { model: db.photos, as: "avatarData", attributes: ["url"] },
+          ],
+        },
+      ],
+      raw: false,
+      nest: true,
+    });
+    if (!_.isEmpty(chat)) {
+      return res.status(200).json({ data: chat });
+    } else {
+      const newMemberChat = await db.memberChat.create({
+        userId1: userIdLoggedIn,
+        userId2: userIdAdmin,
+      });
+
+      if (newMemberChat) {
+        const chat = await db.memberChat.findOne({
+          where: { userId1: userIdLoggedIn, userId2: userIdAdmin },
+          include: [
+            {
+              model: db.contentChat,
+              as: "contentChatData",
+            },
+            {
+              model: db.users,
+              as: "user1InfoData",
+              attributes: ["firstName", "lastName", "email", "id"],
+              include: [
+                { model: db.photos, as: "avatarData", attributes: ["url"] },
+              ],
+            },
+            {
+              model: db.users,
+              as: "user2InfoData",
+              attributes: ["firstName", "lastName", "email", "id"],
+              include: [
+                { model: db.photos, as: "avatarData", attributes: ["url"] },
+              ],
+            },
+          ],
+          raw: false,
+          nest: true,
+        });
+        if (!_.isEmpty(chat)) {
+          return res.status(200).json({ data: chat });
+        } else {
+          return next({ statusCode: 404, message: "Not found" });
+        }
+      } else {
+        return next({ statusCode: 404, message: "Not found" });
+      }
+    }
+  } catch (err) {
+    return next(err);
   }
 };

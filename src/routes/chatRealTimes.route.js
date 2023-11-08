@@ -2,6 +2,7 @@ import passport from "../config/passport";
 import {
   getAllMemberChat,
   getMemberChat,
+  getMemberChatAdmin,
   createContentChat,
   getAllContentChat,
   allUsers,
@@ -27,6 +28,11 @@ export default (router) => {
     validateChatRealTimes(getMemberSchema),
     passport.authenticate("jwt", { session: false }),
     getMemberChat
+  );
+  router.get(
+    "/chatRealTimes/getMemberChatAdmin",
+    passport.authenticate("jwt", { session: false }),
+    getMemberChatAdmin
   );
 
   router.post(

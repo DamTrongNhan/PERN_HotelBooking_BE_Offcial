@@ -74,9 +74,14 @@ io.on("connection", (socket) => {
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
   socket.on("new message", (newMessage) => {
-    if (!newMessage?.senderId || !newMessage?.readerId)
+    if (
+      !newMessage?.contentChat?.senderId ||
+      !newMessage?.contentChat?.readerId
+    )
       return console.log("Sender or reader is not defined");
-    socket.in(newMessage?.readerId).emit("message received", newMessage);
+    socket
+      .in(newMessage.contentChat.readerId)
+      .emit("message received", newMessage);
   });
 
   // socket.off("setup", () => {
