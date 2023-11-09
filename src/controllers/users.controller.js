@@ -69,10 +69,37 @@ export const createUser = (req, res, next) => {
 export const getUser = (req, res, next) => {
   const id = req.params.id;
   db.users
-    .findOne({ where: { id }, attributes: { exclude: ["password"] } })
-    .then((data) => {
-      if (data) {
-        return res.status(200).json({ data });
+    .findOne({
+      where: { id },
+      attributes: { exclude: ["password", "refreshToken"] },
+      include: [
+        {
+          model: db.photos,
+          as: "avatarData",
+          attributes: ["url"],
+        },
+        {
+          model: db.allCodes,
+          as: "genderData",
+          attributes: ["valueEn", "valueVi"],
+        },
+        {
+          model: db.allCodes,
+          as: "roleData",
+          attributes: ["valueEn", "valueVi"],
+        },
+        {
+          model: db.allCodes,
+          as: "userStatusData",
+          attributes: ["valueEn", "valueVi"],
+        },
+      ],
+      raw: true,
+      nest: true,
+    })
+    .then((user) => {
+      if (user) {
+        return res.status(200).json({ data: user });
       } else next({ statusCode: 404, message: "Not Found" });
     })
     .catch((err) => {

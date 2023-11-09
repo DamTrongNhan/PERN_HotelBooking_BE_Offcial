@@ -34,6 +34,7 @@ export default (router) => {
 
   router.get(
     "/users/getUser/:id",
+    validateUsersParams(params),
     passport.authenticate("jwt", { session: false }),
     getUser
   );
