@@ -39,6 +39,7 @@ export const updateReview = (req, res, next) => {
       return next(err);
     });
 };
+
 export const deleteReview = (req, res, next) => {
   const id = req.params.id;
   db.reviews
@@ -135,6 +136,47 @@ export const getAllReviewsByRoomTypeIdWithPagination = (req, res, next) => {
         return res.status(200).json(response);
       } else {
         return next({ statusCode: 404, message: "No reviews found" });
+      }
+    })
+    .catch((err) => {
+      return next(err);
+    });
+};
+
+export const getAllReviewsByUserId = (req, res, next) => {
+  const userId = req.params.id;
+  db.reviews
+    .findAll({
+      where: { userId },
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: db.users,
+          as: "userDataReviews",
+          attributes: ["firstName", "lastName", "email"],
+          include: [
+            { model: db.photos, as: "avatarData", attributes: ["url", "type"] },
+          ],
+        },
+        {
+          model: db.roomTypes,
+          as: "roomTypesDataReviews",
+          attributes: ["roomTypeKey"],
+          include: [
+            {
+              model: db.allCodes,
+              as: "roomTypeDataRoomTypes",
+              attributes: ["valueVi", "valueEn"],
+            },
+          ],
+        },
+      ],
+      raw: false,
+      nest: true,
+    })
+    .then((data) => {
+      if (data) {
+        return res.status(200).json({ data });
       }
     })
     .catch((err) => {

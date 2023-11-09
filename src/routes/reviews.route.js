@@ -6,10 +6,12 @@ import {
   updateReview,
   deleteReview,
   getAllReviewsByRoomTypeIdWithPagination,
+  getAllReviewsByUserId,
 } from "../controllers/reviews.controller";
 import {
   validateReviews,
   body,
+  bodyUpdate,
   validateReviewsParams,
   params,
   validateReviewsQuery,
@@ -26,7 +28,7 @@ export default (router) => {
   router.put(
     "/reviews/updateReview/:id",
     validateReviewsParams(params),
-    validateReviews(body),
+    validateReviews(bodyUpdate),
     passport.authenticate("jwt", { session: false }),
     updateReview
   );
@@ -50,5 +52,12 @@ export default (router) => {
     "/reviews/getAllReviewsByRoomTypeIdWithPagination",
     validateReviewsQuery(query),
     getAllReviewsByRoomTypeIdWithPagination
+  );
+
+  router.get(
+    "/reviews/getAllReviewsByUserId/:id",
+    validateReviewsParams(params),
+    passport.authenticate("jwt", { session: false }),
+    getAllReviewsByUserId
   );
 };

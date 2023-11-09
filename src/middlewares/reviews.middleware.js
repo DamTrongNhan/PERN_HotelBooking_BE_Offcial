@@ -26,6 +26,15 @@ export const body = Yup.object({
   }),
 });
 
+export const bodyUpdate = Yup.object({
+  body: Yup.object({
+    star: Yup.number().max(5, "Maximum 5 stars").required("Star is required"),
+    review: Yup.string()
+      .max(100, "Maximum of 100 characters")
+      .required("Review is required"),
+  }),
+});
+
 export const validateReviewsParams = (schema) => async (req, res, next) => {
   try {
     await schema.validate({
