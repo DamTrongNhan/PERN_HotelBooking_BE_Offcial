@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
 
       roomTypes.hasMany(models.rooms, {
         foreignKey: "roomTypeKey",
+        sourceKey: "roomTypeKey",
         as: "roomTypesDataRooms",
       });
       // ---------------------------------

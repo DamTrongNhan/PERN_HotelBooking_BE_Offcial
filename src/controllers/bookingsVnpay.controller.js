@@ -143,13 +143,11 @@ export const getVnpayResult = async (req, res, next) => {
         await db.payments.update(
           {
             paymentStatusKey: "SP2",
-            details: `<p>
-            Mã giao dịch VNPAY: ${transactionNo}<br> 
-            Số tiền: ${amount} <br> 
-            Mã ngân hàng thanh toán: ${bankCode}<br> 
-            Mã giao dịch tại Ngân hàng: ${bankTranNo}<br> 
-            Loại tài khoản/thẻ khách hàng sử dụng: ${cardType}<br> 
-            </p>`,
+            details: `<p>Mã giao dịch VNPAY:&nbsp;${transactionNo}</p>
+            <p>Số tiền:&nbsp;${amount}</p>
+            <p>Mã ngân hàng thanh toán:&nbsp;${bankCode}</p>
+            <p>Mã giao dịch tại Ngân hàng:&nbsp;${bankTranNo}</p>
+            <p>Loại tài khoản/thẻ khách hàng sử dụng:&nbsp;${cardType} </p>`,
           },
           {
             where: {

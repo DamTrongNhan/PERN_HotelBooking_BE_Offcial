@@ -318,7 +318,6 @@ export const getAllBookings = (req, res, next) => {
           as: "bookingStatusData",
           attributes: ["valueVi", "valueEn"],
         },
-
         {
           model: db.rooms,
           as: "roomDataBookings",
@@ -669,7 +668,6 @@ export const getBookingByBookingCode = (req, res, next) => {
           as: "bookingStatusData",
           attributes: ["valueVi", "valueEn"],
         },
-
         {
           model: db.rooms,
           as: "roomDataBookings",

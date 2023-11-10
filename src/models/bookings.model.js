@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
 
       bookings.hasOne(models.payments, {
         foreignKey: "bookingCode",
+        sourceKey: "bookingCode",
         as: "paymentData",
       });
     }

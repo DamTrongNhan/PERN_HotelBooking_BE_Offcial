@@ -13,6 +13,8 @@ module.exports = (sequelize, DataTypes) => {
         targetKey: "keyMap",
         as: "paymentStatusData",
       });
+      // -------------------------------------
+
       payments.belongsTo(models.bookings, {
         foreignKey: "bookingCode",
         targetKey: "bookingCode",
@@ -28,6 +30,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.UUIDV4,
         allowNull: false,
       },
+
       bookingCode: { type: DataTypes.UUID, allowNull: false },
 
       paymentTypeKey: { type: DataTypes.STRING, allowNull: false },

@@ -55,7 +55,7 @@ export default (router) => {
   );
 
   router.get(
-    "/bookings/getAllBookingsByUserId",
+    "/bookings/getAllBookingsByUserId/:id",
     validateBookingsParams(params),
     passport.authenticate("jwt", { session: false }),
     getAllBookingsByUserId
