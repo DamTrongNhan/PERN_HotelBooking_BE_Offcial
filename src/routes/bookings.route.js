@@ -6,6 +6,9 @@ import {
   getAllBookingHistories,
   getBooking,
   verifyBooking,
+  getAllBookingsByUserId,
+  getAllBookingHistoriesByUserId,
+  getBookingByBookingCode,
 } from "../controllers/bookings.controller";
 
 import {
@@ -52,9 +55,30 @@ export default (router) => {
   );
 
   router.get(
+    "/bookings/getAllBookingsByUserId",
+    validateBookingsParams(params),
+    passport.authenticate("jwt", { session: false }),
+    getAllBookingsByUserId
+  );
+
+  router.get(
+    "/bookings/getAllBookingHistoriesByUserId",
+    validateBookingsParams(params),
+    passport.authenticate("jwt", { session: false }),
+    getAllBookingHistoriesByUserId
+  );
+
+  router.get(
     "/bookings/getBooking/:id",
     validateBookingsParams(params),
     passport.authenticate("jwt", { session: false }),
     getBooking
+  );
+
+  router.get(
+    "/bookings/getBookingByBookingCode/:id",
+    validateBookingsParams(params),
+    passport.authenticate("jwt", { session: false }),
+    getBookingByBookingCode
   );
 };

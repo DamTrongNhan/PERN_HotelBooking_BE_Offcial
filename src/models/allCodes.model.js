@@ -39,16 +39,18 @@ module.exports = (sequelize, DataTypes) => {
       // --------------------------------------
 
       allCodes.hasMany(models.bookings, {
-        foreignKey: "paymentTypeKey",
-        as: "paymentTypeDataBookings",
-      });
-      allCodes.hasMany(models.bookings, {
-        foreignKey: "paymentStatusKey",
-        as: "paymentStatusData",
-      });
-      allCodes.hasMany(models.bookings, {
         foreignKey: "bookingStatusKey",
         as: "bookingStatusData",
+      });
+      // --------------------------------------
+
+      allCodes.hasMany(models.payments, {
+        foreignKey: "paymentTypeKey",
+        as: "paymentTypeData",
+      });
+      allCodes.hasMany(models.payments, {
+        foreignKey: "paymentStatusKey",
+        as: "paymentStatusData",
       });
       // --------------------------------------
 

@@ -21,11 +21,7 @@ export default (router) => {
     createBookingWithVnpay
   );
   router.get("/bookingsVnpay/vnpay_return", getVnpayResult);
-  router.get(
-    "/bookingsVnpay/checkBookingStatus/:bookingCode",
-    validateBookingsParams(bookingStatus),
-    checkBookingStatus
-  );
+
   router.post(
     "/bookingsVnpay/repayment/",
     validateBookings(body),

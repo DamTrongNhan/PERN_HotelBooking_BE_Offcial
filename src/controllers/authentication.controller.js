@@ -207,7 +207,17 @@ export const oathWithGoogle = async (req, res, next) => {
 
     const user = await db.users.findOne({
       where: { email: googleUser.email.toLowerCase() },
+      include: [
+        {
+          model: db.photos,
+          as: "avatarData",
+          attributes: ["url"],
+        },
+      ],
+      raw: false,
+      nest: true,
     });
+
     if (user) {
       const refreshToken = jwt.sign(
         { id: user.id, roleKey: user.roleKey },
@@ -256,6 +266,7 @@ export const oathWithGoogle = async (req, res, next) => {
       return res.redirect(process.env.REACT_URL);
     } else {
       const randomPassword = generateRandomPassword(8);
+
       const createUser = await db.users.create({
         email: googleUser.email.toLowerCase(),
         password: randomPassword,
@@ -263,7 +274,7 @@ export const oathWithGoogle = async (req, res, next) => {
         lastName: googleUser.family_name,
       });
 
-      await db.photos.create({
+      const { url } = await db.photos.create({
         userId: createUser.id,
         url: googleUser.picture,
         type: "AvatarUser",
@@ -291,17 +302,11 @@ export const oathWithGoogle = async (req, res, next) => {
           where: { id: createUser.id },
         }
       );
-      const {
-        id,
-        firstName,
-        lastName,
-        roleKey,
-        avatarData: { url: avatarUrl },
-      } = createUser;
+      const { id, firstName, lastName, roleKey } = createUser;
 
       res.cookie(
         "data",
-        JSON.stringify({ id, firstName, lastName, roleKey, avatarUrl }),
+        JSON.stringify({ id, firstName, lastName, roleKey, avatarUrl: url }),
         {
           expires: new Date(Date.now() + 5 * 60 * 1000),
         }

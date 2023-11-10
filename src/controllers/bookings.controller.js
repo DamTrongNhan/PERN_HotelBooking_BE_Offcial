@@ -15,8 +15,8 @@ let buildUrlConfirm = (token, bookingId) => {
 };
 
 export const createBooking = (req, res, next) => {
-  const { language, checkIn, checkOut, ...others } = req.body;
-  const data = { ...others };
+  const { language, checkIn, checkOut, paymentTypeKey, ...others } = req.body;
+  const bookingData = { ...others };
 
   const checkInDate = dayjs(checkIn).toDate();
   const checkOutDate = dayjs(checkOut).toDate();
@@ -27,44 +27,59 @@ export const createBooking = (req, res, next) => {
 
   db.bookings
     .create({
-      ...data,
+      ...bookingData,
       checkIn: checkInDate,
       checkOut: checkOutDate,
-      paymentStatusKey: "SP1",
     })
     .then((createBooking) => {
       if (createBooking) {
-        db.bookDates
+        db.payments
           .create({
-            bookingId: createBooking.id,
-            roomId: createBooking.roomId,
-            checkIn: createBooking.checkIn,
-            checkOut: createBooking.checkOut,
+            bookingCode: createBooking.bookingCode,
+            paymentTypeKey,
+            paymentStatusKey: "SP1",
           })
-          .then((createBookDates) => {
-            if (createBookDates) {
-              sendConfirmation({
-                email: createBooking.email,
-                firstName: createBooking.firstName,
-                lastName: createBooking.lastName,
-                bookingCode: createBooking.bookingCode,
-                checkIn: createBooking.checkIn,
-                checkOut: createBooking.checkOut,
-                days: createBooking.days,
-                adult: createBooking.adult,
-                child: createBooking.child,
-                language,
-                urlConfirm: buildUrlConfirm(
-                  createBooking.verifyBookingToken,
-                  createBooking.id
-                ),
-              })
-                .then((info) => {
-                  if (info) {
-                    return res.status(200).json({
-                      message: "Room booked successfully",
+          .then((createBookingPayment) => {
+            if (createBookingPayment) {
+              db.bookDates
+                .create({
+                  bookingId: createBooking.id,
+                  roomId: createBooking.roomId,
+                  checkIn: createBooking.checkIn,
+                  checkOut: createBooking.checkOut,
+                })
+                .then((createBookDates) => {
+                  if (createBookDates) {
+                    sendConfirmation({
+                      email: createBooking.email,
+                      firstName: createBooking.firstName,
+                      lastName: createBooking.lastName,
                       bookingCode: createBooking.bookingCode,
-                    });
+                      checkIn: createBooking.checkIn,
+                      checkOut: createBooking.checkOut,
+                      days: createBooking.days,
+                      adult: createBooking.adult,
+                      child: createBooking.child,
+                      language,
+                      urlConfirm: buildUrlConfirm(
+                        createBooking.verifyBookingToken,
+                        createBooking.id
+                      ),
+                    })
+                      .then((info) => {
+                        if (info) {
+                          return res.status(200).json({
+                            message: "Room booked successfully",
+                            bookingCode: createBooking.bookingCode,
+                          });
+                        } else {
+                          return next({
+                            statusCode: 404,
+                            message: "Not found",
+                          });
+                        }
+                      })
+                      .catch((error) => next(error));
                   } else {
                     return next({ statusCode: 404, message: "Not found" });
                   }
@@ -73,8 +88,7 @@ export const createBooking = (req, res, next) => {
             } else {
               return next({ statusCode: 404, message: "Not found" });
             }
-          })
-          .catch((error) => next(error));
+          });
       } else {
         return next({ statusCode: 404, message: "Not found" });
       }
@@ -144,22 +158,12 @@ export const updateBookingStatus = (req, res, next) => {
       .then(([updateBooking]) => {
         if (updateBooking !== 0) {
           if (bookingStatusKey === "SB2") {
-            db.bookings
-              .update(
-                { paymentStatusKey: "SP2" },
-                { where: { id, paymentStatusKey: "SP1" } }
-              )
-              .then(([updatePaymentStatus]) => {
-                if (updatePaymentStatus !== 0) {
-                  return res.status(200).json({
-                    message: "The customer has checked in.",
-                  });
-                } else {
-                  return next({
-                    statusCode: "404",
-                    message: "Not found",
-                  });
-                }
+            db.payments
+              .update({ paymentStatusKey: "SP2" }, { where: { id } })
+              .then(() => {
+                return res.status(200).json({
+                  message: "The customer has checked in.",
+                });
               })
               .catch((err) => {
                 return next(err);
@@ -294,46 +298,27 @@ export const getAllBookings = (req, res, next) => {
       },
       include: [
         {
+          model: db.payments,
+          as: "paymentData",
+          include: [
+            {
+              model: db.allCodes,
+              as: "paymentTypeData",
+              attributes: ["valueVi", "valueEn"],
+            },
+            {
+              model: db.allCodes,
+              as: "paymentStatusData",
+              attributes: ["valueVi", "valueEn"],
+            },
+          ],
+        },
+        {
           model: db.allCodes,
           as: "bookingStatusData",
           attributes: ["valueVi", "valueEn"],
         },
-        {
-          model: db.allCodes,
-          as: "paymentTypeDataBookings",
-          attributes: ["valueVi", "valueEn"],
-        },
-        {
-          model: db.allCodes,
-          as: "paymentStatusData",
-          attributes: ["valueVi", "valueEn"],
-        },
-        {
-          model: db.users,
-          as: "userDataBookings",
-          include: [
-            {
-              model: db.photos,
-              as: "avatarData",
-              attributes: ["url"],
-            },
-            {
-              model: db.allCodes,
-              as: "genderData",
-              attributes: ["valueEn", "valueVi"],
-            },
-            {
-              model: db.allCodes,
-              as: "roleData",
-              attributes: ["valueEn", "valueVi"],
-            },
-            {
-              model: db.allCodes,
-              as: "userStatusData",
-              attributes: ["valueEn", "valueVi"],
-            },
-          ],
-        },
+
         {
           model: db.rooms,
           as: "roomDataBookings",
@@ -351,22 +336,6 @@ export const getAllBookings = (req, res, next) => {
                   model: db.allCodes,
                   as: "bedTypeData",
                   attributes: ["valueVi", "valueEn"],
-                },
-                {
-                  model: db.photos,
-                  as: "photosDataRoomTypes",
-                  attributes: ["url", "type"],
-                },
-                {
-                  model: db.amenities,
-                  as: "amenitiesData",
-                  include: [
-                    {
-                      model: db.allCodes,
-                      as: "amenitiesTypeData",
-                      attributes: ["valueVi", "valueEn"],
-                    },
-                  ],
                 },
               ],
             },
@@ -397,46 +366,27 @@ export const getAllBookingHistories = (req, res, next) => {
       },
       include: [
         {
+          model: db.payments,
+          as: "paymentData",
+          include: [
+            {
+              model: db.allCodes,
+              as: "paymentTypeData",
+              attributes: ["valueVi", "valueEn"],
+            },
+            {
+              model: db.allCodes,
+              as: "paymentStatusData",
+              attributes: ["valueVi", "valueEn"],
+            },
+          ],
+        },
+        {
           model: db.allCodes,
           as: "bookingStatusData",
           attributes: ["valueVi", "valueEn"],
         },
-        {
-          model: db.allCodes,
-          as: "paymentTypeDataBookings",
-          attributes: ["valueVi", "valueEn"],
-        },
-        {
-          model: db.allCodes,
-          as: "paymentStatusData",
-          attributes: ["valueVi", "valueEn"],
-        },
-        {
-          model: db.users,
-          as: "userDataBookings",
-          include: [
-            {
-              model: db.photos,
-              as: "avatarData",
-              attributes: ["url"],
-            },
-            {
-              model: db.allCodes,
-              as: "genderData",
-              attributes: ["valueEn", "valueVi"],
-            },
-            {
-              model: db.allCodes,
-              as: "roleData",
-              attributes: ["valueEn", "valueVi"],
-            },
-            {
-              model: db.allCodes,
-              as: "userStatusData",
-              attributes: ["valueEn", "valueVi"],
-            },
-          ],
-        },
+
         {
           model: db.rooms,
           as: "roomDataBookings",
@@ -454,22 +404,6 @@ export const getAllBookingHistories = (req, res, next) => {
                   model: db.allCodes,
                   as: "bedTypeData",
                   attributes: ["valueVi", "valueEn"],
-                },
-                {
-                  model: db.photos,
-                  as: "photosDataRoomTypes",
-                  attributes: ["url", "type"],
-                },
-                {
-                  model: db.amenities,
-                  as: "amenitiesData",
-                  include: [
-                    {
-                      model: db.allCodes,
-                      as: "amenitiesTypeData",
-                      attributes: ["valueVi", "valueEn"],
-                    },
-                  ],
                 },
               ],
             },
@@ -503,45 +437,167 @@ export const getBooking = (req, res, next) => {
       },
       include: [
         {
+          model: db.payments,
+          as: "paymentData",
+          include: [
+            {
+              model: db.allCodes,
+              as: "paymentTypeData",
+              attributes: ["valueVi", "valueEn"],
+            },
+            {
+              model: db.allCodes,
+              as: "paymentStatusData",
+              attributes: ["valueVi", "valueEn"],
+            },
+          ],
+        },
+        {
           model: db.allCodes,
           as: "bookingStatusData",
           attributes: ["valueVi", "valueEn"],
         },
+
         {
-          model: db.allCodes,
-          as: "paymentTypeDataBookings",
-          attributes: ["valueVi", "valueEn"],
-        },
-        {
-          model: db.allCodes,
-          as: "paymentStatusData",
-          attributes: ["valueVi", "valueEn"],
-        },
-        {
-          model: db.users,
-          as: "userDataBookings",
+          model: db.rooms,
+          as: "roomDataBookings",
           include: [
             {
-              model: db.photos,
-              as: "avatarData",
-              attributes: ["url"],
+              model: db.allCodes,
+              as: "roomTypeDataRooms",
+              attributes: ["valueVi", "valueEn"],
             },
             {
-              model: db.allCodes,
-              as: "genderData",
-              attributes: ["valueEn", "valueVi"],
-            },
-            {
-              model: db.allCodes,
-              as: "roleData",
-              attributes: ["valueEn", "valueVi"],
-            },
-            {
-              model: db.allCodes,
-              as: "userStatusData",
-              attributes: ["valueEn", "valueVi"],
+              model: db.roomTypes,
+              as: "roomTypesDataRooms",
+              include: [
+                {
+                  model: db.allCodes,
+                  as: "bedTypeData",
+                  attributes: ["valueVi", "valueEn"],
+                },
+              ],
             },
           ],
+        },
+      ],
+      raw: false,
+      nest: true,
+    })
+    .then((data) => {
+      if (data) {
+        return res.status(200).json({ data });
+      }
+    })
+    .catch((err) => {
+      return next(err);
+    });
+};
+
+export const getAllBookingsByUserId = (req, res, next) => {
+  const userId = req.params.id;
+
+  db.bookings
+    .findAll({
+      order: [["createdAt", "ASC"]],
+      where: {
+        userId,
+        bookingStatusKey: {
+          [Op.notIn]: ["SB4", "SB5"],
+        },
+      },
+      include: [
+        {
+          model: db.payments,
+          as: "paymentData",
+          include: [
+            {
+              model: db.allCodes,
+              as: "paymentTypeData",
+              attributes: ["valueVi", "valueEn"],
+            },
+            {
+              model: db.allCodes,
+              as: "paymentStatusData",
+              attributes: ["valueVi", "valueEn"],
+            },
+          ],
+        },
+        {
+          model: db.allCodes,
+          as: "bookingStatusData",
+          attributes: ["valueVi", "valueEn"],
+        },
+
+        {
+          model: db.rooms,
+          as: "roomDataBookings",
+          include: [
+            {
+              model: db.allCodes,
+              as: "roomTypeDataRooms",
+              attributes: ["valueVi", "valueEn"],
+            },
+            {
+              model: db.roomTypes,
+              as: "roomTypesDataRooms",
+              include: [
+                {
+                  model: db.allCodes,
+                  as: "bedTypeData",
+                  attributes: ["valueVi", "valueEn"],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      raw: false,
+      nest: true,
+    })
+    .then((data) => {
+      if (data) {
+        return res.status(200).json({ data });
+      }
+    })
+    .catch((err) => {
+      return next(err);
+    });
+};
+
+export const getAllBookingHistoriesByUserId = (req, res, next) => {
+  const userId = req.params.id;
+
+  db.bookings
+    .findAll({
+      order: [["createdAt", "ASC"]],
+      where: {
+        userId,
+        bookingStatusKey: {
+          [Op.in]: ["SB4", "SB5"],
+        },
+      },
+      include: [
+        {
+          model: db.payments,
+          as: "paymentData",
+          include: [
+            {
+              model: db.allCodes,
+              as: "paymentTypeData",
+              attributes: ["valueVi", "valueEn"],
+            },
+            {
+              model: db.allCodes,
+              as: "paymentStatusData",
+              attributes: ["valueVi", "valueEn"],
+            },
+          ],
+        },
+        {
+          model: db.allCodes,
+          as: "bookingStatusData",
+          attributes: ["valueVi", "valueEn"],
         },
         {
           model: db.rooms,
@@ -561,21 +617,76 @@ export const getBooking = (req, res, next) => {
                   as: "bedTypeData",
                   attributes: ["valueVi", "valueEn"],
                 },
+              ],
+            },
+          ],
+        },
+      ],
+      raw: false,
+      nest: true,
+    })
+    .then((data) => {
+      if (data) {
+        return res.status(200).json({ data });
+      }
+    })
+    .catch((err) => {
+      return next(err);
+    });
+};
+
+export const getBookingByBookingCode = (req, res, next) => {
+  const bookingCode = req.params.id;
+
+  db.bookings
+    .findOne({
+      order: [["createdAt", "ASC"]],
+      where: {
+        bookingCode,
+        bookingStatusKey: {
+          [Op.notIn]: ["SB4", "SB5"],
+        },
+      },
+      include: [
+        {
+          model: db.payments,
+          as: "paymentData",
+          include: [
+            {
+              model: db.allCodes,
+              as: "paymentTypeData",
+              attributes: ["valueVi", "valueEn"],
+            },
+            {
+              model: db.allCodes,
+              as: "paymentStatusData",
+              attributes: ["valueVi", "valueEn"],
+            },
+          ],
+        },
+        {
+          model: db.allCodes,
+          as: "bookingStatusData",
+          attributes: ["valueVi", "valueEn"],
+        },
+
+        {
+          model: db.rooms,
+          as: "roomDataBookings",
+          include: [
+            {
+              model: db.allCodes,
+              as: "roomTypeDataRooms",
+              attributes: ["valueVi", "valueEn"],
+            },
+            {
+              model: db.roomTypes,
+              as: "roomTypesDataRooms",
+              include: [
                 {
-                  model: db.photos,
-                  as: "photosDataRoomTypes",
-                  attributes: ["url", "type"],
-                },
-                {
-                  model: db.amenities,
-                  as: "amenitiesData",
-                  include: [
-                    {
-                      model: db.allCodes,
-                      as: "amenitiesTypeData",
-                      attributes: ["valueVi", "valueEn"],
-                    },
-                  ],
+                  model: db.allCodes,
+                  as: "bedTypeData",
+                  attributes: ["valueVi", "valueEn"],
                 },
               ],
             },

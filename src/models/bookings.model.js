@@ -4,16 +4,6 @@ module.exports = (sequelize, DataTypes) => {
   class bookings extends Model {
     static associate(models) {
       bookings.belongsTo(models.allCodes, {
-        foreignKey: "paymentTypeKey",
-        targetKey: "keyMap",
-        as: "paymentTypeDataBookings",
-      });
-      bookings.belongsTo(models.allCodes, {
-        foreignKey: "paymentStatusKey",
-        targetKey: "keyMap",
-        as: "paymentStatusData",
-      });
-      bookings.belongsTo(models.allCodes, {
         foreignKey: "bookingStatusKey",
         targetKey: "keyMap",
         as: "bookingStatusData",
@@ -37,6 +27,12 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "bookingId",
         as: "serviceTypeDataBookings",
       });
+      // ----------------------------------------
+
+      bookings.hasOne(models.payments, {
+        foreignKey: "bookingCode",
+        as: "paymentData",
+      });
     }
   }
   bookings.init(
@@ -50,14 +46,13 @@ module.exports = (sequelize, DataTypes) => {
       userId: { type: DataTypes.UUID, allowNull: false },
       roomId: { type: DataTypes.UUID, allowNull: false },
 
-      paymentTypeKey: { type: DataTypes.STRING, allowNull: false },
-      paymentStatusKey: { type: DataTypes.STRING, allowNull: false },
-
       bookingStatusKey: {
         type: DataTypes.STRING,
         defaultValue: "SB0",
         allowNull: false,
       },
+
+      totalPrice: { type: DataTypes.FLOAT, allowNull: false },
 
       firstName: { type: DataTypes.STRING, allowNull: false },
       lastName: { type: DataTypes.STRING, allowNull: false },
@@ -71,8 +66,6 @@ module.exports = (sequelize, DataTypes) => {
       days: { type: DataTypes.INTEGER, allowNull: false },
       adult: { type: DataTypes.INTEGER, allowNull: false },
       child: { type: DataTypes.INTEGER, allowNull: false },
-
-      totalPrice: { type: DataTypes.FLOAT, allowNull: false },
 
       bookingCode: {
         type: DataTypes.UUID,

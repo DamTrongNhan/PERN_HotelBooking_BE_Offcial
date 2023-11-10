@@ -21,6 +21,7 @@ export const getGoogleOauthToken = async (code) => {
 
     return data;
   } catch (err) {
+    console.log(err.message);
     console.log("Failed to fetch Google Oauth Tokens");
     throw new Error(err);
   }
@@ -40,6 +41,7 @@ export const getGoogleUser = async (id_token, access_token) => {
     return data;
   } catch (err) {
     console.log(err.message);
+    console.log("Failed to fetch Data User Google Oauth Tokens");
     throw Error(err);
   }
 };
