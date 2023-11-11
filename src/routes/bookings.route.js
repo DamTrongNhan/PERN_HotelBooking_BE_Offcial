@@ -62,7 +62,7 @@ export default (router) => {
   );
 
   router.get(
-    "/bookings/getAllBookingHistoriesByUserId",
+    "/bookings/getAllBookingHistoriesByUserId/:id",
     validateBookingsParams(params),
     passport.authenticate("jwt", { session: false }),
     getAllBookingHistoriesByUserId
