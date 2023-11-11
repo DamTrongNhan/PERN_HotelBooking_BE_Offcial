@@ -144,7 +144,7 @@ export const getVnpayResult = async (req, res, next) => {
           {
             paymentStatusKey: "SP2",
             details: `<p>Mã giao dịch VNPAY:&nbsp;${transactionNo}</p>
-            <p>Số tiền:&nbsp;${amount}</p>
+            <p>Số tiền:&nbsp;${amount / 100}vnd</p>
             <p>Mã ngân hàng thanh toán:&nbsp;${bankCode}</p>
             <p>Mã giao dịch tại Ngân hàng:&nbsp;${bankTranNo}</p>
             <p>Loại tài khoản/thẻ khách hàng sử dụng:&nbsp;${cardType} </p>`,
