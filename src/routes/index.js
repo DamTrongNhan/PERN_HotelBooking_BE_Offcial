@@ -11,6 +11,7 @@ import servicesRoute from "./services.route";
 import reviewsRoute from "./reviews.route";
 import postsRoute from "./posts.route";
 import chatRealTimesRoute from "./chatRealTimes.route";
+import statisticsRoute from "./statistics.route";
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ export default (app) => {
   reviewsRoute(router);
   postsRoute(router);
   chatRealTimesRoute(router);
+  statisticsRoute(router);
 
   return app.use("/api/v1/", router);
 };
