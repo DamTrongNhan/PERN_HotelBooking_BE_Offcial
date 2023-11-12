@@ -23,6 +23,8 @@ module.exports = {
       descriptionVi: { type: DataTypes.TEXT, allowNull: false },
       descriptionEn: { type: DataTypes.TEXT, allowNull: false },
 
+      numberBookings: { type: DataTypes.INTEGER, defaultValue: 0 },
+
       createdAt: {
         allowNull: false,
         type: DataTypes.DATE,
