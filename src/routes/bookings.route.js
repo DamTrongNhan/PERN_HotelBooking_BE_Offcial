@@ -14,9 +14,12 @@ import {
 import {
   validateBookings,
   validateBookingsParams,
+  validateBookingsQuery,
   body,
   updateStatus,
   params,
+  bookingTypeAdmin,
+  bookingTypeUser,
   verify,
 } from "../middlewares/bookings.middleware";
 
@@ -50,6 +53,7 @@ export default (router) => {
   );
   router.get(
     "/bookings/getAllBookingHistories",
+    validateBookingsQuery(bookingTypeAdmin),
     passport.authenticate("jwt", { session: false }),
     getAllBookingHistories
   );
@@ -62,8 +66,8 @@ export default (router) => {
   );
 
   router.get(
-    "/bookings/getAllBookingHistoriesByUserId/:id",
-    validateBookingsParams(params),
+    "/bookings/getAllBookingHistoriesByUserId",
+    validateBookingsQuery(bookingTypeUser),
     passport.authenticate("jwt", { session: false }),
     getAllBookingHistoriesByUserId
   );

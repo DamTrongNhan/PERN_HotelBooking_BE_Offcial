@@ -92,3 +92,26 @@ export const params = Yup.object({
     id: Yup.string().required(),
   }),
 });
+
+export const validateBookingsQuery = (schema) => async (req, res, next) => {
+  try {
+    await schema.validate({
+      query: req.query,
+    });
+    return next();
+  } catch (err) {
+    return res.status(400).json({ type: err.name, message: err.message });
+  }
+};
+
+export const bookingTypeAdmin = Yup.object({
+  query: Yup.object({
+    type: Yup.string().required(),
+  }),
+});
+export const bookingTypeUser = Yup.object({
+  query: Yup.object({
+    type: Yup.string().required(),
+    userId: Yup.string().required(),
+  }),
+});

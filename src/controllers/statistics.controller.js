@@ -12,19 +12,38 @@ export const getAllStatistics = async (req, res, next) => {
     const { count: rooms } = await db.rooms.findAndCountAll({
       where: {},
     });
-    const { count: bookings, rows: bookingsData } =
-      await db.bookings.findAndCountAll({
-        where: { bookingStatusKey: { [Op.eq]: "SB4" } },
-      });
     const { count: reviews } = await db.reviews.findAndCountAll({
       where: {},
     });
+
+    const { count: bookingsCompleted, rows: bookingsData } =
+      await db.bookings.findAndCountAll({
+        where: { bookingStatusKey: { [Op.eq]: "SB4" } },
+      });
+
+    const { count: bookings } = await db.bookings.findAndCountAll({
+      where: { bookingStatusKey: { [Op.notIn]: ["SB4", "SB5"] } },
+    });
+
+    const { count: bookingsCancel } = await db.bookings.findAndCountAll({
+      where: { bookingStatusKey: { [Op.eq]: "SB5" } },
+    });
+
     const totalProfit = bookingsData.reduce(
       (sum, booking) => sum + booking.totalPrice,
       0
     );
 
-    const data = { users, roomTypes, rooms, bookings, reviews, totalProfit };
+    const data = {
+      users,
+      roomTypes,
+      rooms,
+      bookings,
+      bookingsCompleted,
+      bookingsCancel,
+      reviews,
+      totalProfit,
+    };
 
     return res.status(200).json({ data });
   } catch (err) {

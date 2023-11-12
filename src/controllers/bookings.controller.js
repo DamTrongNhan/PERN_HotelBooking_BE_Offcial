@@ -355,12 +355,14 @@ export const getAllBookings = (req, res, next) => {
 };
 
 export const getAllBookingHistories = (req, res, next) => {
+  const { type } = req.query;
+
   db.bookings
     .findAll({
       order: [["createdAt", "ASC"]],
       where: {
         bookingStatusKey: {
-          [Op.in]: ["SB4", "SB5"],
+          [Op.eq]: type,
         },
       },
       include: [
@@ -565,7 +567,7 @@ export const getAllBookingsByUserId = (req, res, next) => {
 };
 
 export const getAllBookingHistoriesByUserId = (req, res, next) => {
-  const userId = req.params.id;
+  const { userId, type } = req.query;
 
   db.bookings
     .findAll({
@@ -573,7 +575,7 @@ export const getAllBookingHistoriesByUserId = (req, res, next) => {
       where: {
         userId,
         bookingStatusKey: {
-          [Op.in]: ["SB4", "SB5"],
+          [Op.eq]: type,
         },
       },
       include: [
