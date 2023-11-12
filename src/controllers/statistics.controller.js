@@ -25,7 +25,7 @@ export const getAllStatistics = async (req, res, next) => {
       where: { bookingStatusKey: { [Op.notIn]: ["SB4", "SB5"] } },
     });
 
-    const { count: bookingsCancel } = await db.bookings.findAndCountAll({
+    const { count: bookingsCancelled } = await db.bookings.findAndCountAll({
       where: { bookingStatusKey: { [Op.eq]: "SB5" } },
     });
 
@@ -38,10 +38,10 @@ export const getAllStatistics = async (req, res, next) => {
       users,
       roomTypes,
       rooms,
-      bookings,
-      bookingsCompleted,
-      bookingsCancel,
       reviews,
+      bookingsCompleted,
+      bookings,
+      bookingsCancelled,
       totalProfit,
     };
 
