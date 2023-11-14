@@ -1,5 +1,6 @@
 import db from "../models";
 import { Op } from "sequelize";
+import dayjs from "dayjs";
 
 export const getAllStatistics = async (req, res, next) => {
   try {
@@ -34,6 +35,13 @@ export const getAllStatistics = async (req, res, next) => {
       0
     );
 
+    const revenue = bookingsData.map((item) => {
+      return {
+        date: dayjs(item?.createdAt).format("DD/MM"),
+        profit: item?.totalPrice,
+      };
+    });
+
     const data = {
       users,
       roomTypes,
@@ -43,6 +51,7 @@ export const getAllStatistics = async (req, res, next) => {
       bookings,
       bookingsCancelled,
       totalProfit,
+      revenue,
     };
 
     return res.status(200).json({ data });
