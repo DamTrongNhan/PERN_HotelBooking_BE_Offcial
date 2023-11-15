@@ -206,25 +206,62 @@ export const updateBookingStatus = (req, res, next) => {
               .catch((error) => next(error));
           } else if (bookingStatusKey === "SB4") {
             db.rooms
-              .increment("numberBookings", { where: { id: roomId } })
-              .then(() => {
-                db.rooms
-                  .update(
-                    { roomStatusKey: "SR1" },
-                    { where: { id: roomId, roomStatusKey: "SR3" } }
-                  )
-                  .then(([updateRoomStatus]) => {
-                    if (updateRoomStatus !== 0) {
-                      return res.status(200).json({
-                        message: "The booking has been completed",
-                      });
-                    } else {
-                      return next({ statusCode: "404", message: "Not found" });
-                    }
-                  })
-                  .catch((err) => {
-                    return next(err);
+              .findOne({
+                where: { id: roomId },
+                include: {
+                  model: db.roomTypes,
+                  as: "roomTypesDataRooms",
+                },
+                raw: false,
+                nest: true,
+              })
+              .then((room) => {
+                if (room) {
+                  db.rooms
+                    .increment("numberBookings", {
+                      by: 1,
+                      where: { id: roomId },
+                    })
+                    .then(() => {
+                      db.roomTypes
+                        .increment("numberBookings", {
+                          by: 1,
+                          where: { id: room.roomTypesDataRooms.id },
+                        })
+                        .then(() => {
+                          db.rooms
+                            .update(
+                              { roomStatusKey: "SR1" },
+                              { where: { id: roomId, roomStatusKey: "SR3" } }
+                            )
+                            .then(([updateRoomStatus]) => {
+                              if (updateRoomStatus !== 0) {
+                                return res.status(200).json({
+                                  message: "The booking has been completed",
+                                });
+                              } else {
+                                return next({
+                                  statusCode: "404",
+                                  message: "Not found",
+                                });
+                              }
+                            })
+                            .catch((err) => {
+                              return next(err);
+                            });
+                        })
+                        .catch((err) => {
+                          return next(err);
+                        });
+                    })
+                    .catch((err) => {
+                      return next(err);
+                    });
+                } else {
+                  return res.status(404).json({
+                    message: "Not found room",
                   });
+                }
               })
               .catch((err) => {
                 return next(err);

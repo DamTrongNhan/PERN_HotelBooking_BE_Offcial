@@ -59,3 +59,14 @@ export const getAllStatistics = async (req, res, next) => {
     return next(err);
   }
 };
+
+export const getBookingsCalendar = async (req, res, next) => {
+  try {
+    const data = await db.bookings.findAll({
+      where: { bookingStatusKey: { [Op.notIn]: ["SB4", "SB5"] } },
+    });
+    return res.status(200).json({ data });
+  } catch (err) {
+    return next(err);
+  }
+};
