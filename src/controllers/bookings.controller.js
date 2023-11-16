@@ -495,7 +495,6 @@ export const getBooking = (req, res, next) => {
           as: "bookingStatusData",
           attributes: ["valueVi", "valueEn"],
         },
-
         {
           model: db.rooms,
           as: "roomDataBookings",

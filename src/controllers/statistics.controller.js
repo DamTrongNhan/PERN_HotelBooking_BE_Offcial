@@ -64,6 +64,53 @@ export const getBookingsCalendar = async (req, res, next) => {
   try {
     const data = await db.bookings.findAll({
       where: { bookingStatusKey: { [Op.notIn]: ["SB4", "SB5"] } },
+      include: [
+        {
+          model: db.payments,
+          as: "paymentData",
+          include: [
+            {
+              model: db.allCodes,
+              as: "paymentTypeData",
+              attributes: ["valueVi", "valueEn"],
+            },
+            {
+              model: db.allCodes,
+              as: "paymentStatusData",
+              attributes: ["valueVi", "valueEn"],
+            },
+          ],
+        },
+        {
+          model: db.allCodes,
+          as: "bookingStatusData",
+          attributes: ["valueVi", "valueEn"],
+        },
+        {
+          model: db.rooms,
+          as: "roomDataBookings",
+          include: [
+            {
+              model: db.allCodes,
+              as: "roomTypeDataRooms",
+              attributes: ["valueVi", "valueEn"],
+            },
+            {
+              model: db.roomTypes,
+              as: "roomTypesDataRooms",
+              include: [
+                {
+                  model: db.allCodes,
+                  as: "bedTypeData",
+                  attributes: ["valueVi", "valueEn"],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      raw: false,
+      nest: true,
     });
     return res.status(200).json({ data });
   } catch (err) {
