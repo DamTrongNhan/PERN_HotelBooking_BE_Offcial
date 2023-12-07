@@ -395,7 +395,7 @@ export const resetPassword = (req, res, next) => {
   } else {
     jwt.verify(token, process.env.JWT_RESET_PASSWORD_SECRET, (err, decoded) => {
       if (err) {
-        return next({ statusCode: 403, message: "Invalid token" });
+        return next({ statusCode: 403, message: "Session expired!" });
       } else {
         bcrypt
           .genSalt(10)

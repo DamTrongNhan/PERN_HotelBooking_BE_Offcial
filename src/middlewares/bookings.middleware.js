@@ -63,6 +63,9 @@ export const updateStatus = Yup.object({
       .max(50, "Maximum of 50 characters")
       .required("Room ID is required"),
     email: Yup.string().email("Email is invalid").required("Email is required"),
+    bookingCode: Yup.string()
+      .max(50, "Maximum of 50 characters")
+      .required("Booking code is required"),
     language: Yup.string()
       .max(32, "Maximum of 32 characters")
       .required("Language is required"),

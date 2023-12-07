@@ -98,7 +98,7 @@ export const createBooking = (req, res, next) => {
 
 export const updateBookingStatus = (req, res, next) => {
   const id = req.params.id;
-  const { bookingStatusKey, roomId, email, language } = req.body;
+  const { bookingStatusKey, roomId, email, bookingCode, language } = req.body;
 
   const statusMap = {
     SB1: "SB0",
@@ -145,7 +145,6 @@ export const updateBookingStatus = (req, res, next) => {
           });
         }
       })
-
       .catch((err) => {
         return next(err);
       });
@@ -157,9 +156,11 @@ export const updateBookingStatus = (req, res, next) => {
       )
       .then(([updateBooking]) => {
         if (updateBooking !== 0) {
-          if (bookingStatusKey === "SB2") {
+          if (bookingStatusKey === "SB1") {
+            return res.status(200).json({ message: "Reservation confirmed" });
+          } else if (bookingStatusKey === "SB2") {
             db.payments
-              .update({ paymentStatusKey: "SP2" }, { where: { id } })
+              .update({ paymentStatusKey: "SP2" }, { where: { bookingCode } })
               .then(() => {
                 return res.status(200).json({
                   message: "The customer has checked in.",
